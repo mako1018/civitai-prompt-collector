@@ -1,0 +1,26 @@
+# Ignore rules
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+.env
+
+backend/data/raw/
+backend/data/processed/
+backend/data/exports/
+
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
