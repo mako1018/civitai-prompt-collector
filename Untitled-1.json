@@ -1,0 +1,14 @@
+{
+  "name": "civitai-prompt-api",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Minimal API to serve categorized prompts",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
