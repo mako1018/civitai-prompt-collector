@@ -1,6 +1,0 @@
-requests
-sentence-transformers
-scikit-learn
-umap-learn
-hdbscan
-numpy
