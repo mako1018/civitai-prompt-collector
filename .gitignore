@@ -1,24 +1,32 @@
-# Ignore rules
+# Python
 __pycache__/
 *.py[cod]
+
+# Virtual env
 .venv/
 venv/
+env/
+
+# Build/test artifacts
 dist/
 build/
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
 
+# Node (念のため)
 node_modules/
 npm-debug.log*
 yarn-error.log*
 
+# Env files
 .env
 
-backend/data/raw/
-backend/data/processed/
-backend/data/exports/
+# Project data and archives
+data/
+_archive/
 
+# OS/editor
 .DS_Store
 Thumbs.db
 .vscode/
