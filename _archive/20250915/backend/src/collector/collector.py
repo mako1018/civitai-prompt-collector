@@ -10,9 +10,9 @@ from backend.src.common.schema import make_record, validate_record
 
 logger = get_logger()
 
-API_BASE = "https://api.civitai.com/v1"
+API_BASE = "https://civitai.com/api/v1"
 # TODO: Replace with the actual endpoint you intend to collect initially (e.g., "/images", "/models", etc.)
-ENDPOINT = "/prompts"  # placeholder path; adjust to real CivitAI API path
+ENDPOINT = "/models" # placeholder path; adjust to real CivitAI API path
 RAW_DIR = Path("data/raw")
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -45,10 +45,24 @@ def api_fetch(limit: int, cursor: Optional[str]) -> Tuple[List[Dict], Optional[s
 
     records = []
     for it in items:
-        # TODO: Adjust field mapping to actual JSON fields returned by the chosen endpoint
-        r = make_record(pid=it.get("id"), prompt=it.get("prompt") or "")
+        # まず prompt をそのまま試す（/models には通常無い）
+        raw_prompt = it.get("prompt")
+
+        # 無ければ name + description で代替
+        if not raw_prompt:
+            name = it.get("name") or ""
+            desc = it.get("description") or ""
+            raw_prompt = (name + "\n" + desc).strip()
+
+        # それでも空ならスキップ
+        if not raw_prompt:
+            continue
+
+        r = make_record(pid=it.get("id"), prompt=raw_prompt)
         if validate_record(r):
             records.append(r)
+        else:
+            logger.debug("Record failed validation", extra={"extra_data": {"id": it.get("id")}})
     return records, next_cursor
 
 def run(max_batches: int = 5, batch_limit: int = 50, sleep_sec: float = 1.0):
