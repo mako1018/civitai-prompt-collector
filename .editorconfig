@@ -5,3 +5,16 @@ end_of_line = lf
 charset = utf-8
 insert_final_newline = true
 trim_trailing_whitespace = true
+
+# Windows用スクリプトはCRLF
+[*.{bat,cmd,ps1,psm1,psd1}]
+end_of_line = crlf
+
+# 推奨インデント（必要に応じて調整）
+[*.py]
+indent_style = space
+indent_size = 4
+
+[*.{js,json,yml,yaml}]
+indent_style = space
+indent_size = 2
