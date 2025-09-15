@@ -1,8 +1,1 @@
-{
-  "files.eol": "\n",
-  "files.insertFinalNewline": true,
-  "files.trimTrailingWhitespace": true,
-  "git.autofetch": true,
-  "[powershell]": { "files.eol": "\r\n" },
-  "[bat]": { "files.eol": "\r\n" }
-}
+{"files.eol":"\n","files.insertFinalNewline":true,"files.trimTrailingWhitespace":true,"editor.formatOnSave":true,"[powershell]":{"files.eol":"\r\n"},"[bat]":{"files.eol":"\r\n"}}
