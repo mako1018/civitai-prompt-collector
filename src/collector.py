@@ -37,7 +37,7 @@ def fetch_dummy_data(limit: int, page_start: int) -> List[Dict[str, Any]]:
     page_start is included just to show how pagination might shift IDs.
     """
     base_id = (page_start - 1) * limit
-    now_iso = dt.datetime.utcnow().isoformat() + "Z"
+    now_iso = dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z")
     records = []
     for i in range(limit):
         record_id = base_id + i + 1
@@ -106,7 +106,7 @@ def collect(args: argparse.Namespace) -> int:
     ensure_dir(args.output)
 
     # 1. Fetch (dummy for now)
-    logger.info(f"Fetching dummy data: limit={args.limit} page_start={args.page_start}")
+    logger.info(f"Fetching dummy data: limit={{args.limit}} page_start={{args.page_start}}")
     t0 = time.time()
     records = fetch_dummy_data(args.limit, args.page_start)
 
@@ -122,17 +122,17 @@ def collect(args: argparse.Namespace) -> int:
         before = count_jsonl_lines(out_file)
         written = save_jsonl(records, out_file)
         after = before + written
-        logger.info(f"Saved {written} records to {out_file} (lines before={before}, after={after})")
+        logger.info(f"Saved {{written}} records to {{out_file}} (lines before={{before}}, after={{after}})")
     else:
         out_file = os.path.join(args.output, "data.json")
         written = save_json(records, out_file)
-        logger.info(f"Saved {written} records to {out_file} (JSON array)")
+        logger.info(f"Saved {{written}} records to {{out_file}} (JSON array)")
 
     # 4. Summary
     elapsed = time.time() - t0
     print(
-        f"[SUMMARY] records={len(records)} format={args.format} "
-        f"output={out_file} elapsed={elapsed:.2f}s"
+        f"[SUMMARY] records={{len(records)}} format={{args.format}} "
+        f"output={{out_file}} elapsed={{elapsed:.2f}}s"
     )
 
     return 0
@@ -192,7 +192,7 @@ def main(argv: List[str] | None = None) -> int:
         return 130
     except Exception as e:
         logging.exception("Unhandled error")
-        print(f"ERROR: {e}", file=sys.stderr)
+        print(f"ERROR: {{e}}", file=sys.stderr)
         return 1
 
 
