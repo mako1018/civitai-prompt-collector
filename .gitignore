@@ -35,4 +35,6 @@ Thumbs.db
 
 # Local DB files
 test_collect.db
+test_collect.db.bak
 *.db
+test_collect.db.bak
