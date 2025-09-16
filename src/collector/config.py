@@ -11,7 +11,6 @@ if env_path.exists():
 DB_DEFAULT = "civitai_dataset.db"
 CIVITAI_API_ENV = "CIVITAI_API_KEY"
 
-# 6カテゴリの辞書（例）
 CATEGORIES = {
     "nsfw": ["nsfw", "adult"],
     "style": ["photorealistic", "anime", "cartoon"],
