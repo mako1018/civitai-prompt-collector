@@ -1,5 +1,5 @@
 from typing import List, Dict
-from .config import CATEGORIES
+from .config import CATEGORIES, REPRESENTATIVE_STOPWORDS
 
 # キーワードマッチ実装
 def keyword_categorize(text: str) -> List[str]:
@@ -70,20 +70,71 @@ def cluster_prompts(prompts: List[str], min_cluster_size: int = 5, umap_n_neighb
     return {"labels": labels, "embedding": embs, "cluster_info": cluster_info}
 
 # 代表キーワード抽出（簡易）
-def summarize_clusters(prompts: List[str], labels) -> Dict[int, str]:
+def summarize_clusters(prompts: List[str], labels, top_n: int = 5, ngram_range=(1,3)) -> Dict[int, str]:
+    """
+    TF-IDF による代表語抽出（前処理付き、フォールバックあり）。
+    config.REPRESENTATIVE_STOPWORDS を追加ストップ語として使用する。
+    """
+    import re
+    import numpy as _np
     from collections import Counter
-    clusters = {}
-    for lbl, txt in zip(labels, prompts):
-        clusters.setdefault(int(lbl), []).append(txt)
+
+    def clean_text(s: str) -> str:
+        s = (s or "").lower()
+        s = re.sub(r"[^\w\s]", " ", s)  # 句読点削除
+        s = re.sub(r"\s+", " ", s).strip()
+        return s
+
+    cleaned = [clean_text(p) for p in prompts]
     summaries = {}
-    for lbl, items in clusters.items():
-        if lbl == -1:
-            summaries[lbl] = "noise"
-            continue
-        words = " ".join(items).lower().split()
-        common = [w for w, _ in Counter(words).most_common(10) if len(w) > 3]
-        summaries[lbl] = " ".join(common[:5]) if common else ""
-    return summaries
+    try:
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        # combine english stopwords with project-specific ones
+        stop_words = "english"
+        # TfidfVectorizer accepts list; if you pass list, use that
+        try:
+            # create combined list (english + custom) by obtaining english stop words set if available
+            from sklearn.feature_extraction import _stop_words
+            english = set(_stop_words.ENGLISH_STOP_WORDS)
+            combined = list(english.union(set(REPRESENTATIVE_STOPWORDS)))
+            stop_words = combined
+        except Exception:
+            # fallback: just use custom list
+            stop_words = list(REPRESENTATIVE_STOPWORDS)
+
+        vect = TfidfVectorizer(max_df=0.9, min_df=1, stop_words=stop_words,
+                               ngram_range=ngram_range, max_features=10000)
+        X = vect.fit_transform(cleaned)
+        terms = _np.array(vect.get_feature_names_out())
+
+        unique_labels = sorted(set(int(l) for l in labels))
+        for lbl in unique_labels:
+            idxs = [i for i, v in enumerate(labels) if int(v) == lbl]
+            if not idxs:
+                summaries[int(lbl)] = ""
+                continue
+            if lbl == -1:
+                summaries[int(lbl)] = "noise"
+                continue
+            cluster_vec = _np.asarray(X[idxs].mean(axis=0)).ravel()
+            top_idx = cluster_vec.argsort()[::-1][:top_n]
+            top_terms = [t for t in terms[top_idx] if t.strip()]
+            summaries[int(lbl)] = ", ".join(top_terms[:top_n]) if top_terms else ""
+        return summaries
+
+    except Exception:
+        # フォールバック: 頻度ベース（既存ロジック）
+        clusters = {}
+        for lbl, txt in zip(labels, prompts):
+            clusters.setdefault(int(lbl), []).append(txt)
+        for lbl, items in clusters.items():
+            if lbl == -1:
+                summaries[lbl] = "noise"
+                continue
+            words = " ".join(items).lower().split()
+            common = [w for w, _ in Counter(words).most_common(top_n * 3) if len(w) > 3]
+            summaries[lbl] = ", ".join(common[:top_n]) if common else ""
+        return summaries
 
 # バッチ API
 def categorize_prompts_batch(prompts: List[str], use_clustering: bool = False, **cluster_kwargs):

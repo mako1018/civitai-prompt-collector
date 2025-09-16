@@ -11,6 +11,13 @@ if env_path.exists():
 DB_DEFAULT = "civitai_dataset.db"
 CIVITAI_API_ENV = "CIVITAI_API_KEY"
 
+# 代表語抽出で除外したいドメイン固有ストップワード（必要に応じて編集）
+REPRESENTATIVE_STOPWORDS = [
+    "photo", "image", "picture", "portrait", "character", "style",
+    "detailed", "quality", "high", "low", "closeup", "close", "shot",
+    "render", "8k", "ultra", "hdr", "best", "cute", "illustration",
+]
+
 CATEGORIES = {
     "nsfw": ["nsfw", "adult"],
     "style": ["photorealistic", "anime", "cartoon"],
