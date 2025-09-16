@@ -17,20 +17,30 @@ class CivitaiPromptCollector:
         self.api_key = os.getenv(config.CIVITAI_API_ENV, None)
         init_db(self.db_path)
 
-        # v8 実装があるならラップして利用
-        self._v8 = V8Collector() if V8Collector is not None else None
+        # v8 実装があればラップして利用（db_path / user_agent を渡す）
+        if V8Collector is not None:
+            try:
+                self._v8 = V8Collector(db_path=self.db_path, user_agent=self.user_agent)
+            except TypeError:
+                # もし v8 の __init__ が異なるシグネチャなら引数無しでインスタンス化
+                self._v8 = V8Collector()
+        else:
+            self._v8 = None
 
     def collect_for_models(self, models: Dict[str, Optional[str]], max_per_model: int = 5000):
         """
-        models: {"model_name": "model_id" or None}
-        簡易的に v8 実装があれば呼び出し、なければ空の結果を返す。
-        各プロンプトは DB に保存され、カテゴリ付与を行う（暫定）。
+        v8 の collect_for_models が存在すればそれを優先して実行。
+        なければ既存の個別保存フローで処理する。
         """
+        # v8 による完全実装がある場合はそれを呼び出して終了
+        if self._v8 is not None and hasattr(self._v8, "collect_for_models"):
+            return self._v8.collect_for_models(models, max_per_model=max_per_model)
+
+        # フォールバック（既存ロジック）
         results = {}
         for name, model_id in models.items():
             items = []
             if self._v8 is not None:
-                # v8 の collect メソッド名は未知のため想定して呼び出し
                 if hasattr(self._v8, "collect_for_model"):
                     items = self._v8.collect_for_model(model_id, max_items=max_per_model)
                 elif hasattr(self._v8, "collect"):

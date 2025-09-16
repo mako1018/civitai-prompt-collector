@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import re
+import os  # 追加
 
 class CivitaiPromptCollector:
     def __init__(self, db_path="civitai_dataset.db", user_agent=None):
@@ -94,14 +95,16 @@ class CivitaiPromptCollector:
         conn.close()
 
     def fetch_batch(self, url_or_params, max_retries=3):
-        """APIから1ページ分を取得（nextPage/cursor対応、リトライ付き）
-        url_or_params: dictならparams、strならnextPageのURL
-        """
+        """APIから1ページ分を取得（nextPage/cursor対応、リトライ付き）"""
         headers = {
             "User-Agent": self.user_agent,
             "Accept": "application/json",
-            "Authorization": "Bearer 1fa8d053c6d7623478f19f3f098d0bf8"
         }
+        # Authorization は環境変数から取得（ハードコード禁止）
+        api_key = os.getenv("CIVITAI_API_KEY")
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+
         for attempt in range(1, max_retries + 1):
             try:
                 if isinstance(url_or_params, dict):
