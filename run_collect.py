@@ -1,3 +1,10 @@
+from pathlib import Path
+import sys
+ROOT = Path(__file__).resolve().parent
+SRC = str(ROOT / "src")
+if SRC not in sys.path:
+    sys.path.insert(0, SRC)
+
 from collector import CivitaiPromptCollector
 
 c = CivitaiPromptCollector(db_path="test_collect.db")
