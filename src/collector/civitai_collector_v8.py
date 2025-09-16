@@ -101,7 +101,8 @@ class CivitaiPromptCollector:
             "Accept": "application/json",
         }
         # Authorization は環境変数から取得（ハードコード禁止）
-        api_key = os.getenv("CIVITAI_API_KEY")
+        from .config import CIVITAI_API_ENV  # type: ignore
+        api_key = os.getenv(CIVITAI_API_ENV)
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
 
