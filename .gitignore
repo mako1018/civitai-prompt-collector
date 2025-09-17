@@ -32,3 +32,12 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+
+# Local DB files
+test_collect.db
+test_collect.db.bak
+*.db
+test_collect.db.bak
+# local DB backups and bundles
+test_collect.db.*
+repo.bundle
