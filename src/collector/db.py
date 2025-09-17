@@ -1,9 +1,9 @@
 import sqlite3
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Union
 
 CREATE_PROMPTS_TABLE = """
 CREATE TABLE IF NOT EXISTS prompts (
-    id TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY NOT NULL,
     model_id TEXT,
     prompt TEXT,
     categories TEXT,
@@ -17,8 +17,14 @@ def init_db(db_path: str):
     conn.commit()
     conn.close()
 
-def save_prompt(db_path: str, record: Dict[str, Any]):
-    conn = sqlite3.connect(db_path)
+def save_prompt(conn: Union[str, sqlite3.Connection], record: Dict[str, Any]):
+    if isinstance(conn, str):
+        conn = sqlite3.connect(conn)
+
+    # Validate input data
+    if not record.get("id"):
+        raise ValueError("The 'id' field is required and cannot be None.")
+
     cur = conn.cursor()
     cur.execute(
         "INSERT OR REPLACE INTO prompts (id, model_id, prompt, categories, created_at) VALUES (?, ?, ?, ?, ?)",
@@ -31,7 +37,6 @@ def save_prompt(db_path: str, record: Dict[str, Any]):
         ),
     )
     conn.commit()
-    conn.close()
 
 def count_prompts(db_path: str) -> int:
     conn = sqlite3.connect(db_path)
